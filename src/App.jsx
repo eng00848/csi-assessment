@@ -538,8 +538,96 @@ function Report({ name, date, result, answers, onReset }) {
   )
 }
 
+// ── Password gate ─────────────────────────────────────────────────────────
+const ACCESS_PASSWORD = 'nets2026'
+
+function PasswordGate({ onUnlock }) {
+  const [pw, setPw] = useState('')
+  const [error, setError] = useState(false)
+  const [shake, setShake] = useState(false)
+
+  function attempt(e) {
+    e.preventDefault()
+    if (pw === ACCESS_PASSWORD) {
+      onUnlock()
+    } else {
+      setError(true)
+      setShake(true)
+      setPw('')
+      setTimeout(() => setShake(false), 600)
+    }
+  }
+
+  return (
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f7f7f4', padding:'20px' }}>
+      <div style={{
+        background:'#fff', border:'0.5px solid #e0e0da', borderRadius:'16px',
+        padding:'40px 36px', width:'100%', maxWidth:'380px', textAlign:'center',
+        boxShadow:'0 4px 24px rgba(0,0,0,0.06)',
+        transform: shake ? 'translateX(0)' : 'none',
+        animation: shake ? 'shake 0.5s ease' : 'none',
+      }}>
+        <style>{`
+          @keyframes shake {
+            0%,100%{transform:translateX(0)}
+            15%{transform:translateX(-8px)}
+            30%{transform:translateX(8px)}
+            45%{transform:translateX(-6px)}
+            60%{transform:translateX(6px)}
+            75%{transform:translateX(-3px)}
+            90%{transform:translateX(3px)}
+          }
+        `}</style>
+
+        {/* Icon */}
+        <div style={{ width:'52px', height:'52px', background:GOLD_LIGHT, borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px' }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill={GOLD}><path d="M12 2L8.5 7.5H3l4.5 4-1.7 6L12 14.5l6.2 3-1.7-6 4.5-4h-5.5z"/></svg>
+        </div>
+
+        <div style={{ fontSize:'20px', fontWeight:500, fontFamily:'Georgia,serif', color:'#1a1a1a', marginBottom:'6px' }}>
+          Change Style Indicator
+        </div>
+        <div style={{ fontSize:'12px', color:'#888', marginBottom:'28px', lineHeight:1.5 }}>
+          Enter the access password to begin your assessment.
+        </div>
+
+        <form onSubmit={attempt}>
+          <input
+            type="password"
+            value={pw}
+            onChange={e => { setPw(e.target.value); setError(false) }}
+            placeholder="Password"
+            autoFocus
+            style={{
+              width:'100%', padding:'10px 14px', fontSize:'14px',
+              border:`1.5px solid ${error ? '#E24B4A' : '#ddddd8'}`,
+              borderRadius:'8px', background: error ? '#FCEBEB' : '#fff',
+              color:'#1a1a1a', fontFamily:'inherit', outline:'none',
+              marginBottom:'8px', textAlign:'center', letterSpacing:'0.1em',
+              transition:'border-color 0.2s, background 0.2s',
+            }}
+          />
+          {error && (
+            <div style={{ fontSize:'11px', color:'#A32D2D', marginBottom:'10px' }}>
+              Incorrect password. Please try again.
+            </div>
+          )}
+          <button type="submit" style={{
+            width:'100%', padding:'10px', fontSize:'13px', fontWeight:600,
+            borderRadius:'8px', border:'none', background:'#2E7D6B',
+            color:'#fff', cursor:'pointer', fontFamily:'inherit', marginTop:'4px',
+          }}>
+            Enter →
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 // ── Assessment form ───────────────────────────────────────────────────────
 export default function App() {
+  const [unlocked, setUnlocked] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [date, setDate] = useState('')
@@ -548,6 +636,8 @@ export default function App() {
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState(null)
   const [step, setStep] = useState(1)
+
+  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />
 
   function handleA(i, val) {
     const v = parseInt(val)
