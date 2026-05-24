@@ -494,9 +494,9 @@ export default function App() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
-          {[['Full name *', name, setName, 'e.g. ChienPing Tham', 'text'],
-            ['Email (optional)', email, setEmail, 'e.g. name@company.com', 'email'],
-            ['Date', date, setDate, 'e.g. 23 May 2026', 'text']].map(([label, val, setter, ph, type]) => (
+          {[['Full name *', name, setName, 'e.g. John Doe', 'text'],
+            ['Email (optional)', email, setEmail, 'e.g. name@nets.com.sg', 'email'],
+            ['Date', date, setDate, 'e.g. 1 Apr 2026', 'text']].map(([label, val, setter, ph, type]) => (
             <div key={label}>
               <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px', fontWeight: 500 }}>{label}</label>
               <input type={type} style={inp} value={val} onChange={e => setter(e.target.value)} placeholder={ph} />
