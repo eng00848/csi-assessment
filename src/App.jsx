@@ -150,7 +150,7 @@ function injectPrintStyle() {
 function PrintHeader({ name, department, section }) {
   return (
     <div className="print-header">
-      <span>Change Style Indicator — {name}{department ? ` · ${department}` : ''}</span>
+      <span>Change Style Indicator Assessment — {name}{department ? ` · ${department}` : ''}</span>
       <span>{section}</span>
     </div>
   )
