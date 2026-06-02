@@ -725,7 +725,7 @@ export default function App() {
           <svg width="24" height="24" viewBox="0 0 24 24" fill={GOLD}><path d="M12 2L8.5 7.5H3l4.5 4-1.7 6L12 14.5l6.2 3-1.7-6 4.5-4h-5.5z"/></svg>
         </div>
         <div>
-          <div style={{ fontSize:'18px', fontWeight:500, fontFamily:'Georgia,serif' }}>Change Style Indicator</div>
+          <div style={{ fontSize:'18px', fontWeight:500, fontFamily:'Georgia,serif' }}>Change Style Indicator Assessment</div>
           <div style={{ fontSize:'11px', color:'#888' }}>Assessment · Your full report appears instantly on screen</div>
         </div>
       </div>
