@@ -585,7 +585,7 @@ function PasswordGate({ onUnlock }) {
         </div>
 
         <div style={{ fontSize:'20px', fontWeight:500, fontFamily:'Georgia,serif', color:'#1a1a1a', marginBottom:'6px' }}>
-          Change Style Indicator
+          Change Style Indicator Assessment
         </div>
         <div style={{ fontSize:'12px', color:'#888', marginBottom:'28px', lineHeight:1.5 }}>
           Enter the access password to begin your assessment.
