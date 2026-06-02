@@ -273,7 +273,7 @@ function Report({ name, date, department, result, answers, onReset }) {
       {/* ══ PAGE 1 — COVER ══ */}
       <div className="cover-banner print-page" style={{ background:`linear-gradient(135deg, ${ac} 0%, ${ac}cc 100%)`, borderRadius:'12px', padding:'40px 36px', marginBottom:'16px', color:'#fff', minHeight:'220px', display:'flex', flexDirection:'column', justifyContent:'space-between' }}>
         <div>
-          <div style={{ fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.15em', opacity:0.65, marginBottom:'14px' }}>Change Style Indicator · Improve Change Effectiveness</div>
+          <div style={{ fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.15em', opacity:0.65, marginBottom:'14px' }}>Change Style Indicator Assessment · Improve Change Effectiveness</div>
           <div style={{ fontSize:'36px', fontFamily:'Georgia,serif', lineHeight:1.1, marginBottom:'6px' }}>{name}</div>
           <div style={{ fontSize:'13px', opacity:0.75, marginBottom:'24px' }}>{department && <span style={{ marginRight:'12px' }}>{department}</span>}{date}</div>
           <div style={{ display:'inline-block', background:'rgba(255,255,255,0.2)', border:'1px solid rgba(255,255,255,0.4)', borderRadius:'99px', padding:'6px 20px', fontSize:'12px', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' }}>
