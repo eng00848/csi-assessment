@@ -16,7 +16,7 @@ function doPost(e) {
     if (!sheet) {
       sheet = ss.insertSheet(SHEET_NAME)
       const headers = [
-        'Submitted At', 'Name', 'Email', 'Date',
+        'Submitted At', 'Name', 'Email', 'Department', 'Date',
         'Conserver Score', 'Originator Score', 'Difference',
         'Style', 'Sub-Type',
         'Q1A','Q1B','Q2A','Q2B','Q3A','Q3B','Q4A','Q4B','Q5A','Q5B',
@@ -34,6 +34,7 @@ function doPost(e) {
       data.submitted_at || new Date().toISOString(),
       data.name || '',
       data.email || '',
+      data.department || '',
       data.date || '',
       data.conserver_score || 0,
       data.originator_score || 0,
