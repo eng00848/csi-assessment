@@ -147,10 +147,10 @@ function injectPrintStyle() {
 }
 
 // ── Reusable components ───────────────────────────────────────────────────
-function PrintHeader({ name, section }) {
+function PrintHeader({ name, department, section }) {
   return (
     <div className="print-header">
-      <span>Change Style Indicator — {name}</span>
+      <span>Change Style Indicator — {name}{department ? ` · ${department}` : ''}</span>
       <span>{section}</span>
     </div>
   )
@@ -230,7 +230,7 @@ function Continuum({ pct, accentColor }) {
 }
 
 // ── Full inline report ────────────────────────────────────────────────────
-function Report({ name, date, result, answers, onReset }) {
+function Report({ name, date, department, result, answers, onReset }) {
   const { cScore, oScore, diff, style, subType } = result
   const narr = NARRATIVES[style][subType]
   const info = STYLE_INFO[style]
@@ -258,7 +258,7 @@ function Report({ name, date, result, answers, onReset }) {
         <div>
           <div style={{ fontSize:'10px', fontWeight:500, textTransform:'uppercase', letterSpacing:'0.1em', color:'#999', marginBottom:'4px' }}>Your CSI Report</div>
           <div style={{ fontSize:'22px', fontWeight:400, fontFamily:'Georgia,serif', color:'#1a1a1a' }}>{name}</div>
-          <div style={{ fontSize:'12px', color:'#888' }}>{date}</div>
+          <div style={{ fontSize:'12px', color:'#888' }}>{department && <span style={{ marginRight:'10px' }}>{department}</span>}{date}</div>
         </div>
         <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
           <button onClick={() => window.print()} style={{ padding:'9px 20px', fontSize:'12px', borderRadius:'8px', border:`1px solid ${ac}`, background:ac, color:'#fff', cursor:'pointer', fontFamily:'inherit', fontWeight:600 }}>
@@ -275,7 +275,7 @@ function Report({ name, date, result, answers, onReset }) {
         <div>
           <div style={{ fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.15em', opacity:0.65, marginBottom:'14px' }}>Change Style Indicator · Improve Change Effectiveness</div>
           <div style={{ fontSize:'36px', fontFamily:'Georgia,serif', lineHeight:1.1, marginBottom:'6px' }}>{name}</div>
-          <div style={{ fontSize:'13px', opacity:0.75, marginBottom:'24px' }}>{date}</div>
+          <div style={{ fontSize:'13px', opacity:0.75, marginBottom:'24px' }}>{department && <span style={{ marginRight:'12px' }}>{department}</span>}{date}</div>
           <div style={{ display:'inline-block', background:'rgba(255,255,255,0.2)', border:'1px solid rgba(255,255,255,0.4)', borderRadius:'99px', padding:'6px 20px', fontSize:'12px', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' }}>
             {narr.label}
           </div>
@@ -292,7 +292,7 @@ function Report({ name, date, result, answers, onReset }) {
 
       {/* ══ PAGE 2 — SCORE + RESULT ══ */}
       <Section title="Your Change Style Score" accent={ac} pageBreak>
-        <PrintHeader name={name} section="Your Score" />
+        <PrintHeader name={name} department={department} section="Your Score" />
 
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'22px' }}>
           {[['Conserver Score', cScore, BLUE, BLUE_LIGHT,'score-box-blue'],
@@ -315,7 +315,7 @@ function Report({ name, date, result, answers, onReset }) {
 
       {/* ══ PAGE 3 — STRENGTHS & CHALLENGES ══ */}
       <Section title="Strengths & Potential Challenges" accent={ac} pageBreak>
-        <PrintHeader name={name} section="Strengths & Challenges" />
+        <PrintHeader name={name} department={department} section="Strengths & Challenges" />
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px' }}>
           <div className="sw-strengths" style={{ background:GREEN_LIGHT, borderRadius:'10px', padding:'18px 16px' }}>
             <div style={{ fontSize:'11px', fontWeight:700, color:GREEN, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'14px', display:'flex', alignItems:'center', gap:'7px' }}>
@@ -342,7 +342,7 @@ function Report({ name, date, result, answers, onReset }) {
 
       {/* ══ PAGE 4 — STYLE PROFILE ══ */}
       <Section title={`${styleLabel} Style Profile`} accent={ac} pageBreak>
-        <PrintHeader name={name} section={`${styleLabel} Style Profile`} />
+        <PrintHeader name={name} department={department} section={`${styleLabel} Style Profile`} />
         <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
           Across five key dimensions, here is how your {styleLabel} preference is most likely to show up in the workplace.
         </p>
@@ -371,7 +371,7 @@ function Report({ name, date, result, answers, onReset }) {
 
       {/* ══ PAGE 5 — HOW OTHERS SEE YOU ══ */}
       <Section title="How Others See You — and How You See Them" accent={ac} pageBreak>
-        <PrintHeader name={name} section="Common Perceptions" />
+        <PrintHeader name={name} department={department} section="Common Perceptions" />
         <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
           These are common perceptions between change styles — not judgments. Awareness is the first step to bridging differences and improving collaboration.
         </p>
@@ -406,7 +406,7 @@ function Report({ name, date, result, answers, onReset }) {
 
       {/* ══ PAGE 6 — TIPS ══ */}
       <Section title={`Tips for ${styleLabel}s`} accent={ac} pageBreak>
-        <PrintHeader name={name} section="Tips for Increasing Effectiveness" />
+        <PrintHeader name={name} department={department} section="Tips for Increasing Effectiveness" />
         <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
           These tips are personalised to your {narr.label} profile. Apply them when your preferred style may be limiting your effectiveness.
         </p>
@@ -432,7 +432,7 @@ function Report({ name, date, result, answers, onReset }) {
 
       {/* ══ PAGE 7 — WORKING WITH YOUR STYLE ══ */}
       <Section title={`Working With ${styleLabel}s`} accent={ac} pageBreak>
-        <PrintHeader name={name} section={`Working With ${styleLabel}s`} />
+        <PrintHeader name={name} department={department} section={`Working With ${styleLabel}s`} />
         <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
           Share this section with your colleagues, manager, or direct reports so they understand how to communicate and collaborate most effectively with you.
         </p>
@@ -462,7 +462,7 @@ function Report({ name, date, result, answers, onReset }) {
 
       {/* ══ PAGE 8 — POTENTIAL PITFALLS ══ */}
       <Section title="Potential Pitfalls of Each Style" accent={ac} pageBreak>
-        <PrintHeader name={name} section="Potential Pitfalls" />
+        <PrintHeader name={name} department={department} section="Potential Pitfalls" />
         <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
           Any strength, when overused, can become a derailer. Below are common challenges for each style — your own are highlighted.
         </p>
@@ -491,7 +491,7 @@ function Report({ name, date, result, answers, onReset }) {
 
       {/* ══ PAGE 9 — ITEM RESPONSES ══ */}
       <Section title="Your Item Responses — All 20 Items" accent={ac} pageBreak>
-        <PrintHeader name={name} section="Item Responses" />
+        <PrintHeader name={name} department={department} section="Item Responses" />
         <p style={{ fontSize:'12px', color:'#555', marginBottom:'14px', lineHeight:1.65 }}>
           Each pair sums to 3. Filled circles show where you placed the higher weight.
         </p>
@@ -630,6 +630,7 @@ export default function App() {
   const [unlocked, setUnlocked] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [department, setDepartment] = useState('')
   const [date, setDate] = useState('')
   const [answers, setAnswers] = useState(Array(20).fill(null).map(() => ({ a:'', b:'' })))
   const [errors, setErrors] = useState(Array(20).fill(null))
@@ -672,6 +673,7 @@ export default function App() {
     setErrors(nextE)
     if (!valid) { window.scrollTo({ top:0, behavior:'smooth' }); return }
     if (!name.trim()) { alert('Please enter your name.'); return }
+    if (!department) { alert('Please select your department.'); return }
 
     let cScore=0, oScore=0
     for (let i=0; i<20; i++) {
@@ -686,7 +688,7 @@ export default function App() {
     setSubmitting(true)
     const reportDate = date || new Date().toLocaleDateString('en-GB',{ day:'numeric', month:'long', year:'numeric' })
     await saveToSheets({
-      name: name.trim(), email: email.trim(), date: reportDate,
+      name: name.trim(), email: email.trim(), department: department, date: reportDate,
       conserver_score: cScore, originator_score: oScore, difference: diff,
       style: style.charAt(0).toUpperCase()+style.slice(1),
       sub_type: NARRATIVES[style][subType].label,
@@ -702,7 +704,7 @@ export default function App() {
   function reset() {
     setAnswers(Array(20).fill(null).map(()=>({ a:'', b:'' })))
     setErrors(Array(20).fill(null))
-    setName(''); setEmail(''); setDate('')
+    setName(''); setEmail(''); setDepartment(''); setDate('')
     setResult(null); setStep(1)
     window.scrollTo({ top:0, behavior:'smooth' })
   }
@@ -710,7 +712,7 @@ export default function App() {
   const reportDate = date || new Date().toLocaleDateString('en-GB',{ day:'numeric', month:'long', year:'numeric' })
 
   if (step===2 && result) {
-    return <Report name={name} date={reportDate} result={result} answers={answers} onReset={reset} />
+    return <Report name={name} date={reportDate} department={department} result={result} answers={answers} onReset={reset} />
   }
 
   const inp = { width:'100%', padding:'8px 12px', fontSize:'13px', border:'1px solid #ddddd8', borderRadius:'8px', background:'#fff', color:'#1a1a1a', fontFamily:'inherit', outline:'none' }
@@ -738,15 +740,34 @@ export default function App() {
           </div>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px', marginBottom:'20px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
           {[['Full name *', name, setName, '', 'text'],
-            ['Email (optional)', email, setEmail, '', 'email'],
-            ['Date', date, setDate, '', 'text']].map(([label, val, setter, ph, type]) => (
+            ['Email (optional)', email, setEmail, '', 'email']].map(([label, val, setter, ph, type]) => (
             <div key={label}>
               <label style={{ display:'block', fontSize:'11px', color:'#666', marginBottom:'4px', fontWeight:500 }}>{label}</label>
               <input type={type} style={inp} value={val} onChange={e => setter(e.target.value)} placeholder={ph} />
             </div>
           ))}
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'20px' }}>
+          <div>
+            <label style={{ display:'block', fontSize:'11px', color:'#666', marginBottom:'4px', fontWeight:500 }}>Department *</label>
+            <select
+              value={department}
+              onChange={e => setDepartment(e.target.value)}
+              style={{ ...inp, color: department ? '#1a1a1a' : '#999', cursor:'pointer' }}
+            >
+              <option value="" disabled>Select your department</option>
+              {['BCS','NETS Tech','NETS','NETS Solutions','Corporate Functions'].map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={{ display:'block', fontSize:'11px', color:'#666', marginBottom:'4px', fontWeight:500 }}>Date</label>
+            <input type="text" style={inp} value={date} onChange={e => setDate(e.target.value)} placeholder="" />
+          </div>
         </div>
 
         <div style={{ display:'grid', gridTemplateColumns:'24px 1fr 60px 60px', gap:'8px', alignItems:'center', fontSize:'10px', color:'#888', fontWeight:600, paddingBottom:'8px', borderBottom:'1px solid #e8e8e4', marginBottom:'4px', textTransform:'uppercase', letterSpacing:'0.05em' }}>
