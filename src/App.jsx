@@ -673,7 +673,7 @@ export default function App() {
     setErrors(nextE)
     if (!valid) { window.scrollTo({ top:0, behavior:'smooth' }); return }
     if (!name.trim()) { alert('Please enter your name.'); return }
-    if (!department) { alert('Please select your department.'); return }
+    if (!department) { alert('Please select your entity.'); return }
 
     let cScore=0, oScore=0
     for (let i=0; i<20; i++) {
@@ -752,13 +752,13 @@ export default function App() {
 
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'20px' }}>
           <div>
-            <label style={{ display:'block', fontSize:'11px', color:'#666', marginBottom:'4px', fontWeight:500 }}>Department *</label>
+            <label style={{ display:'block', fontSize:'11px', color:'#666', marginBottom:'4px', fontWeight:500 }}>Entity *</label>
             <select
               value={department}
               onChange={e => setDepartment(e.target.value)}
               style={{ ...inp, color: department ? '#1a1a1a' : '#999', cursor:'pointer' }}
             >
-              <option value="" disabled>Select your department</option>
+              <option value="" disabled>Select your entity</option>
               {['BCS','NETS Tech','NETS','NETS Solutions','Corporate Functions'].map(d => (
                 <option key={d} value={d}>{d}</option>
               ))}
