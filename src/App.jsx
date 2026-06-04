@@ -759,7 +759,7 @@ export default function App() {
               style={{ ...inp, color: department ? '#1a1a1a' : '#999', cursor:'pointer' }}
             >
               <option value="" disabled>Select your entity</option>
-              {['BCS','NETS Tech','NETS','NETS Solutions','Corporate Functions'].map(d => (
+              {['BCS','NETS Tech','NETS','NETS Solutions','Corporate Functions','NETS Malaysia'].map(d => (
                 <option key={d} value={d}>{d}</option>
               ))}
             </select>
