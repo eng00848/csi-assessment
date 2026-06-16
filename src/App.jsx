@@ -767,7 +767,7 @@ export default function App() {
           </div>
           <div>
             <label style={{ display:'block', fontSize:'11px', color:'#666', marginBottom:'4px', fontWeight:500 }}>Date</label>
-            <input type="text" style={inp} value={date} onChange={e => setDate(e.target.value)} placeholder="" />
+            <input type="date" style={inp} value={date} onChange={e => setDate(e.target.value)} />
           </div>
         </div>
 
