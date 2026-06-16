@@ -673,6 +673,7 @@ export default function App() {
     setErrors(nextE)
     if (!valid) { window.scrollTo({ top:0, behavior:'smooth' }); return }
     if (!name.trim()) { alert('Please enter your name.'); return }
+    if (!email.trim()) { alert('Please enter your work email.'); return }
     if (!department) { alert('Please select your entity.'); return }
 
     let cScore=0, oScore=0
