@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { QUESTIONS, ITEM_MAP, NARRATIVES, STYLE_INFO, TIPS, WORKING_WITH } from './data.js'
-import { classifyScore, getSubType, continuumPct } from './reportBuilder.js'
+import { classifyScore, getSubType, continuumPct, buildReportHTML } from './reportBuilder.js'
 
 const SHEETS_URL = import.meta.env.VITE_SHEETS_URL || ''
 
@@ -21,121 +21,42 @@ async function saveToSheets(payload) {
   } catch (e) { console.warn('Sheet save failed:', e) }
 }
 
-// ── Print styles: preserves all colours, backgrounds, layout ─────────────
+// ── Print styles ──────────────────────────────────────────────────────────
 const PRINT_STYLE = `
-  @page {
-    size: A4;
-    margin: 14mm 16mm 16mm 16mm;
-  }
-
+  @page { size: A4; margin: 14mm 16mm 16mm 16mm; }
   @media print {
     *, *::before, *::after {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       color-adjust: exact !important;
     }
-
-    html, body {
-      background: #fff !important;
-      font-size: 11px !important;
-    }
-
+    html, body { background: #fff !important; font-size: 11px !important; }
     .no-print { display: none !important; }
-
-    .report-wrap {
-      max-width: 100% !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
-    /* Each print-page becomes its own page */
-    .print-page {
-      page-break-after: always;
-      page-break-inside: avoid;
-      break-after: page;
-      margin-bottom: 0 !important;
-      border-radius: 8px !important;
-    }
-    .print-page:last-of-type {
-      page-break-after: avoid;
-      break-after: avoid;
-    }
-
-    /* Keep section cards looking like the screen */
-    .report-section {
-      border: 0.5px solid #e0e0da !important;
-      border-radius: 8px !important;
-      margin-bottom: 0 !important;
-      overflow: visible !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-
-    /* Cover gradient must print */
-    .cover-banner {
-      background: linear-gradient(135deg, var(--ac) 0%, var(--ac-fade) 100%) !important;
-      border-radius: 8px !important;
-      color: #fff !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    /* Coloured score boxes */
-    .score-box-blue  { background: #E6F1FB !important; }
-    .score-box-gold  { background: #FFF3D6 !important; }
-    .score-box-ac    { background: var(--al) !important; }
-
-    /* Green / red SW cards */
-    .sw-strengths    { background: #EAF3DE !important; }
-    .sw-challenges   { background: #FCEBEB !important; }
-
-    /* Continuum track */
-    .cont-track      { background: #f0f0ec !important; }
-    .cont-center     { background: #ddddd8 !important; }
-
-    /* Dimension cards, perception cards, tip rows */
-    .dim-card, .perc-card, .work-card {
-      border: 0.5px solid #e8e8e4 !important;
-      border-radius: 8px !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-
-    /* Style reference blocks */
+    .report-wrap { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    .print-page { page-break-after: always; page-break-inside: avoid; break-after: page; margin-bottom: 0 !important; border-radius: 8px !important; }
+    .print-page:last-of-type { page-break-after: avoid; break-after: avoid; }
+    .report-section { border: 0.5px solid #e0e0da !important; border-radius: 8px !important; margin-bottom: 0 !important; overflow: visible !important; page-break-inside: avoid; break-inside: avoid; }
+    .cover-banner { background: linear-gradient(135deg, var(--ac) 0%, var(--ac-fade) 100%) !important; border-radius: 8px !important; color: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .score-box-blue { background: #E6F1FB !important; }
+    .score-box-gold { background: #FFF3D6 !important; }
+    .score-box-ac { background: var(--al) !important; }
+    .sw-strengths { background: #EAF3DE !important; }
+    .sw-challenges { background: #FCEBEB !important; }
+    .cont-track { background: #f0f0ec !important; }
+    .cont-center { background: #ddddd8 !important; }
+    .dim-card, .perc-card, .work-card { border: 0.5px solid #e8e8e4 !important; border-radius: 8px !important; page-break-inside: avoid; break-inside: avoid; }
     .style-ref-c { background: #f7f7f4 !important; border-top: 3px solid #185FA5 !important; }
     .style-ref-p { background: #f7f7f4 !important; border-top: 3px solid #3B6D11 !important; }
     .style-ref-o { background: #f7f7f4 !important; border-top: 3px solid #C8860A !important; }
-
-    /* Sub-type narrative box */
     .subtype-box { border-left-width: 3px !important; border-left-style: solid !important; }
-
-    /* Chip badges */
     .chip-badge { border: 0.5px solid !important; }
-
-    /* Pitfall highlight block */
     .pitfall-highlight { border-radius: 8px !important; }
-
-    /* Item response table */
     .resp-table td, .resp-table th { border-bottom: 0.5px solid #f4f4f0 !important; }
     .score-dot-hi { border-radius: 50% !important; color: #fff !important; }
-    .score-dot    { background: #f0f0ec !important; border-radius: 50% !important; }
-
-    /* Running page header — shows on every printed page */
-    .print-header {
-      display: flex !important;
-      justify-content: space-between;
-      font-size: 9px;
-      color: #aaa;
-      border-bottom: 0.5px solid #e8e8e4;
-      padding-bottom: 6px;
-      margin-bottom: 12px;
-    }
+    .score-dot { background: #f0f0ec !important; border-radius: 50% !important; }
+    .print-header { display: flex !important; justify-content: space-between; font-size: 9px; color: #aaa; border-bottom: 0.5px solid #e8e8e4; padding-bottom: 6px; margin-bottom: 12px; }
   }
-
-  /* Hide running headers on screen */
-  @media screen {
-    .print-header { display: none !important; }
-  }
+  @media screen { .print-header { display: none !important; } }
 `
 
 function injectPrintStyle() {
@@ -156,73 +77,44 @@ function PrintHeader({ name, department, section }) {
   )
 }
 
-function Section({ title, children, accent, pageBreak, noPad }) {
+function Section({ title, children, accent, pageBreak }) {
   return (
-    <div
-      className={`report-section${pageBreak ? ' print-page' : ''}`}
-      style={{
-        background: '#fff',
-        border: '0.5px solid #e0e0da',
-        borderRadius: '12px',
-        marginBottom: '16px',
-        overflow: 'hidden',
-      }}
-    >
+    <div className={`report-section${pageBreak ? ' print-page' : ''}`} style={{ background:'#fff', border:'0.5px solid #e0e0da', borderRadius:'12px', marginBottom:'16px', overflow:'hidden' }}>
       {title && (
-        <div style={{
-          padding: '11px 24px',
-          borderBottom: '0.5px solid #e8e8e4',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: '#fafaf8',
-        }}>
-          <div style={{ width: '3px', height: '16px', borderRadius: '99px', background: accent || '#888', flexShrink: 0 }} />
-          <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: '#444' }}>{title}</div>
+        <div style={{ padding:'11px 24px', borderBottom:'0.5px solid #e8e8e4', display:'flex', alignItems:'center', gap:'8px', background:'#fafaf8' }}>
+          <div style={{ width:'3px', height:'16px', borderRadius:'99px', background: accent || '#888', flexShrink:0 }} />
+          <div style={{ fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.09em', color:'#444' }}>{title}</div>
         </div>
       )}
-      <div style={{ padding: noPad ? '0' : '20px 24px' }}>{children}</div>
+      <div style={{ padding:'20px 24px' }}>{children}</div>
     </div>
   )
 }
 
 function Chip({ label, color }) {
   return (
-    <span className="chip-badge" style={{
-      display: 'inline-block', fontSize: '11px', padding: '3px 10px',
-      borderRadius: '99px', margin: '2px 3px 2px 0',
-      background: color ? color + '18' : '#f0f0ec',
-      color: color || '#555',
-      border: `0.5px solid ${color ? color + '55' : '#ddddd8'}`,
-    }}>{label}</span>
+    <span className="chip-badge" style={{ display:'inline-block', fontSize:'11px', padding:'3px 10px', borderRadius:'99px', margin:'2px 3px 2px 0', background: color ? color+'18':'#f0f0ec', color: color||'#555', border:`0.5px solid ${color ? color+'55':'#ddddd8'}` }}>{label}</span>
   )
 }
 
 function Continuum({ pct, accentColor }) {
   return (
-    <div style={{ margin: '8px 0 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#888', marginBottom: '7px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-        <span style={{ color: BLUE, fontWeight: 600 }}>Conserver</span>
-        <span style={{ color: GREEN, fontWeight: 600 }}>Pragmatist</span>
-        <span style={{ color: GOLD, fontWeight: 600 }}>Originator</span>
+    <div style={{ margin:'8px 0 16px' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', fontSize:'10px', color:'#888', marginBottom:'7px', textTransform:'uppercase', letterSpacing:'0.06em' }}>
+        <span style={{ color:BLUE, fontWeight:600 }}>Conserver</span>
+        <span style={{ color:GREEN, fontWeight:600 }}>Pragmatist</span>
+        <span style={{ color:GOLD, fontWeight:600 }}>Originator</span>
       </div>
-      <div className="cont-track" style={{ height: '14px', background: '#f0f0ec', borderRadius: '99px', position: 'relative', overflow: 'visible' }}>
-        <div className="cont-center" style={{ position: 'absolute', top: 0, bottom: 0, left: '33.3%', right: '33.3%', background: '#ddddd8' }} />
-        <div style={{
-          position: 'absolute', top: '50%', left: `${pct}%`,
-          transform: 'translate(-50%,-50%)',
-          width: '24px', height: '24px', borderRadius: '50%',
-          background: accentColor,
-          border: '3px solid #fff',
-          boxShadow: `0 0 0 2px ${accentColor}55, 0 2px 6px ${accentColor}44`,
-        }} />
+      <div className="cont-track" style={{ height:'14px', background:'#f0f0ec', borderRadius:'99px', position:'relative', overflow:'visible' }}>
+        <div className="cont-center" style={{ position:'absolute', top:0, bottom:0, left:'33.3%', right:'33.3%', background:'#ddddd8' }} />
+        <div style={{ position:'absolute', top:'50%', left:`${pct}%`, transform:'translate(-50%,-50%)', width:'24px', height:'24px', borderRadius:'50%', background:accentColor, border:'3px solid #fff', boxShadow:`0 0 0 2px ${accentColor}55, 0 2px 6px ${accentColor}44` }} />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '5px' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', paddingTop:'5px' }}>
         {['60','30','17','9','5','0','5','9','17','30','60'].map((t,i) => (
-          <div key={i} style={{ textAlign: 'center', flex: 1, fontSize: '9px', color: '#bbb', fontWeight: t==='0'?700:400 }}>{t}</div>
+          <div key={i} style={{ textAlign:'center', flex:1, fontSize:'9px', color:'#bbb', fontWeight:t==='0'?700:400 }}>{t}</div>
         ))}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#ccc', paddingTop: '2px' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', fontSize:'9px', color:'#ccc', paddingTop:'2px' }}>
         <span>25%</span><span>50%</span><span>25%</span>
       </div>
     </div>
@@ -243,15 +135,14 @@ function Report({ name, date, department, result, answers, onReset }) {
 
   injectPrintStyle()
 
-  // inject CSS vars for cover gradient (needed in print)
-  const cssVars = { '--ac': ac, '--ac-fade': ac + 'cc', '--al': al }
+  const cssVars = { '--ac':ac, '--ac-fade':ac+'cc', '--al':al }
 
   const tipNum = (n) => (
-    <div style={{ flexShrink:0, width:'22px', height:'22px', borderRadius:'50%', background: al, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'10px', fontWeight:700, color: at, marginTop:'1px' }}>{n}</div>
+    <div style={{ flexShrink:0, width:'22px', height:'22px', borderRadius:'50%', background:al, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'10px', fontWeight:700, color:at, marginTop:'1px' }}>{n}</div>
   )
 
   return (
-    <div className="report-wrap" style={{ maxWidth: '780px', margin: '0 auto', padding: '24px 20px 64px', ...cssVars }}>
+    <div className="report-wrap" style={{ maxWidth:'780px', margin:'0 auto', padding:'24px 20px 64px', ...cssVars }}>
 
       {/* ── Screen-only top bar ── */}
       <div className="no-print" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px', flexWrap:'wrap', gap:'10px' }}>
@@ -281,8 +172,8 @@ function Report({ name, date, department, result, answers, onReset }) {
           </div>
         </div>
         <div style={{ display:'flex', gap:'20px', marginTop:'32px', paddingTop:'20px', borderTop:'1px solid rgba(255,255,255,0.2)' }}>
-          {[['Conserver Score', cScore],['Difference', diff],['Originator Score', oScore]].map(([l,v]) => (
-            <div key={l} style={{ textAlign:'left' }}>
+          {[['Conserver Score',cScore],['Difference',diff],['Originator Score',oScore]].map(([l,v]) => (
+            <div key={l}>
               <div style={{ fontSize:'28px', fontFamily:'Georgia,serif', fontWeight:400, lineHeight:1 }}>{v}</div>
               <div style={{ fontSize:'10px', opacity:0.65, marginTop:'4px', textTransform:'uppercase', letterSpacing:'0.06em' }}>{l}</div>
             </div>
@@ -290,23 +181,18 @@ function Report({ name, date, department, result, answers, onReset }) {
         </div>
       </div>
 
-      {/* ══ PAGE 2 — SCORE + RESULT ══ */}
+      {/* ══ PAGE 2 — SCORE ══ */}
       <Section title="Your Change Style Score" accent={ac} pageBreak>
         <PrintHeader name={name} department={department} section="Your Score" />
-
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'22px' }}>
-          {[['Conserver Score', cScore, BLUE, BLUE_LIGHT,'score-box-blue'],
-            ['Difference', diff, ac, al,'score-box-ac'],
-            ['Originator Score', oScore, GOLD, GOLD_LIGHT,'score-box-gold']].map(([l,v,c,bg,cls]) => (
+          {[['Conserver Score',cScore,BLUE,BLUE_LIGHT,'score-box-blue'],['Difference',diff,ac,al,'score-box-ac'],['Originator Score',oScore,GOLD,GOLD_LIGHT,'score-box-gold']].map(([l,v,c,bg,cls]) => (
             <div key={l} className={cls} style={{ background:bg, borderRadius:'12px', padding:'16px 14px', textAlign:'center' }}>
               <div style={{ fontSize:'40px', fontFamily:'Georgia,serif', fontWeight:400, color:c, lineHeight:1 }}>{v}</div>
               <div style={{ fontSize:'10px', color:c, textTransform:'uppercase', letterSpacing:'0.06em', marginTop:'5px', fontWeight:600, opacity:0.85 }}>{l}</div>
             </div>
           ))}
         </div>
-
         <Continuum pct={pct} accentColor={ac} />
-
         <div className="subtype-box" style={{ background:al, borderLeft:`4px solid ${ac}`, borderRadius:'0 10px 10px 0', padding:'14px 18px', marginTop:'4px' }}>
           <div style={{ fontSize:'10px', fontWeight:700, color:at, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'7px' }}>{narr.label} — what this means for you</div>
           <div style={{ fontSize:'13px', color:'#1a1a1a', lineHeight:1.72 }}>{narr.intro}</div>
@@ -322,9 +208,7 @@ function Report({ name, date, department, result, answers, onReset }) {
               <span style={{ fontSize:'16px' }}>✦</span> Key Strengths
             </div>
             <ul style={{ paddingLeft:'16px' }}>
-              {narr.strengths.map((x,i) => (
-                <li key={i} style={{ fontSize:'12px', lineHeight:1.7, marginBottom:'7px', color:'#1a3a0a' }}>{x}</li>
-              ))}
+              {narr.strengths.map((x,i) => <li key={i} style={{ fontSize:'12px', lineHeight:1.7, marginBottom:'7px', color:'#1a3a0a' }}>{x}</li>)}
             </ul>
           </div>
           <div className="sw-challenges" style={{ background:RED_LIGHT, borderRadius:'10px', padding:'18px 16px' }}>
@@ -332,9 +216,7 @@ function Report({ name, date, department, result, answers, onReset }) {
               <span style={{ fontSize:'16px' }}>⚠</span> Potential Challenges
             </div>
             <ul style={{ paddingLeft:'16px' }}>
-              {narr.challenges.map((x,i) => (
-                <li key={i} style={{ fontSize:'12px', lineHeight:1.7, marginBottom:'7px', color:'#3a0a0a' }}>{x}</li>
-              ))}
+              {narr.challenges.map((x,i) => <li key={i} style={{ fontSize:'12px', lineHeight:1.7, marginBottom:'7px', color:'#3a0a0a' }}>{x}</li>)}
             </ul>
           </div>
         </div>
@@ -343,17 +225,10 @@ function Report({ name, date, department, result, answers, onReset }) {
       {/* ══ PAGE 4 — STYLE PROFILE ══ */}
       <Section title={`${styleLabel} Style Profile`} accent={ac} pageBreak>
         <PrintHeader name={name} department={department} section={`${styleLabel} Style Profile`} />
-        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
-          Across five key dimensions, here is how your {styleLabel} preference is most likely to show up in the workplace.
-        </p>
+        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>Across five key dimensions, here is how your {styleLabel} preference is most likely to show up in the workplace.</p>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'12px' }}>
-          {[
-            ['When Facing Change', info.facing],
-            ['When Contributing', info.contributing],
-            ['When Leading', info.leading],
-            ['When Supporting Innovation', info.innovation],
-          ].map(([title, items]) => (
-            <div key={title} className="dim-card" style={{ border:`1px solid ${ac}22`, borderRadius:'10px', padding:'14px 16px', background: al + '44' }}>
+          {[['When Facing Change',info.facing],['When Contributing',info.contributing],['When Leading',info.leading],['When Supporting Innovation',info.innovation]].map(([title,items]) => (
+            <div key={title} className="dim-card" style={{ border:`1px solid ${ac}22`, borderRadius:'10px', padding:'14px 16px', background:al+'44' }}>
               <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:ac, marginBottom:'10px', paddingBottom:'6px', borderBottom:`1px solid ${ac}22` }}>{title}</div>
               <ul style={{ paddingLeft:'14px' }}>
                 {items.map((x,i) => <li key={i} style={{ fontSize:'11px', lineHeight:1.6, marginBottom:'4px', color:'#2a2a2a' }}>{x}</li>)}
@@ -361,7 +236,7 @@ function Report({ name, date, department, result, answers, onReset }) {
             </div>
           ))}
         </div>
-        <div className="dim-card" style={{ border:`1px solid ${ac}22`, borderRadius:'10px', padding:'14px 16px', background: al + '44' }}>
+        <div className="dim-card" style={{ border:`1px solid ${ac}22`, borderRadius:'10px', padding:'14px 16px', background:al+'44' }}>
           <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:ac, marginBottom:'10px', paddingBottom:'6px', borderBottom:`1px solid ${ac}22` }}>When Collaborating</div>
           <div style={{ display:'flex', flexWrap:'wrap', gap:'6px' }}>
             {info.collaborating.map((x,i) => <Chip key={i} label={x} color={ac} />)}
@@ -372,44 +247,31 @@ function Report({ name, date, department, result, answers, onReset }) {
       {/* ══ PAGE 5 — HOW OTHERS SEE YOU ══ */}
       <Section title="How Others See You — and How You See Them" accent={ac} pageBreak>
         <PrintHeader name={name} department={department} section="Common Perceptions" />
-        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
-          These are common perceptions between change styles — not judgments. Awareness is the first step to bridging differences and improving collaboration.
-        </p>
+        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>These are common perceptions between change styles — not judgments. Awareness is the first step to bridging differences and improving collaboration.</p>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'14px' }}>
           {otherStyles.map(os => {
-            const ol = os.charAt(0).toUpperCase() + os.slice(1)
+            const ol = os.charAt(0).toUpperCase()+os.slice(1)
             const oc = STYLE_INFO[os].color
             const ocl = STYLE_INFO[os].light
             return (
-              <div key={os} className="perc-card" style={{ border:`1px solid ${oc}33`, borderRadius:'10px', padding:'14px 16px', background: ocl + '55' }}>
-                <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:oc, marginBottom:'8px', paddingBottom:'6px', borderBottom:`1px solid ${oc}33` }}>
-                  {ol}s may see you as
-                </div>
-                <div style={{ marginBottom:'12px' }}>
-                  {(info.perceivedBy[os]||[]).map((x,i) => <Chip key={i} label={x} color={oc} />)}
-                </div>
-                <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:ac, marginBottom:'8px', paddingBottom:'6px', borderBottom:`1px solid ${ac}33` }}>
-                  You may see {ol}s as
-                </div>
-                <div>
-                  {(info.perceives[os]||[]).map((x,i) => <Chip key={i} label={x} color={ac} />)}
-                </div>
+              <div key={os} className="perc-card" style={{ border:`1px solid ${oc}33`, borderRadius:'10px', padding:'14px 16px', background:ocl+'55' }}>
+                <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:oc, marginBottom:'8px', paddingBottom:'6px', borderBottom:`1px solid ${oc}33` }}>{ol}s may see you as</div>
+                <div style={{ marginBottom:'12px' }}>{(info.perceivedBy[os]||[]).map((x,i) => <Chip key={i} label={x} color={oc} />)}</div>
+                <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:ac, marginBottom:'8px', paddingBottom:'6px', borderBottom:`1px solid ${ac}33` }}>You may see {ol}s as</div>
+                <div>{(info.perceives[os]||[]).map((x,i) => <Chip key={i} label={x} color={ac} />)}</div>
               </div>
             )
           })}
         </div>
         <div style={{ background:GRAY_LIGHT, borderRadius:'8px', padding:'12px 16px', fontSize:'12px', color:'#555', lineHeight:1.65, borderLeft:'3px solid #ccc' }}>
-          <strong style={{ color:'#2a2a2a' }}>Remember: </strong>
-          These perceptions are natural by-products of style differences, not character flaws. The goal is not to change your style but to adapt it consciously for the situation.
+          <strong style={{ color:'#2a2a2a' }}>Remember: </strong>These perceptions are natural by-products of style differences, not character flaws. The goal is not to change your style but to adapt it consciously for the situation.
         </div>
       </Section>
 
       {/* ══ PAGE 6 — TIPS ══ */}
       <Section title={`Tips for ${styleLabel}s`} accent={ac} pageBreak>
         <PrintHeader name={name} department={department} section="Tips for Increasing Effectiveness" />
-        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
-          These tips are personalised to your {narr.label} profile. Apply them when your preferred style may be limiting your effectiveness.
-        </p>
+        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>These tips are personalised to your {narr.label} profile. Apply them when your preferred style may be limiting your effectiveness.</p>
         <div style={{ marginBottom:'20px' }}>
           <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'#888', marginBottom:'10px', paddingBottom:'5px', borderBottom:'1px solid #e8e8e4' }}>General tips — all styles</div>
           {TIPS.general.map((t,i) => (
@@ -433,12 +295,10 @@ function Report({ name, date, department, result, answers, onReset }) {
       {/* ══ PAGE 7 — WORKING WITH YOUR STYLE ══ */}
       <Section title={`Working With ${styleLabel}s`} accent={ac} pageBreak>
         <PrintHeader name={name} department={department} section={`Working With ${styleLabel}s`} />
-        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
-          Share this section with your colleagues, manager, or direct reports so they understand how to communicate and collaborate most effectively with you.
-        </p>
+        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>Share this section with your colleagues, manager, or direct reports so they understand how to communicate and collaborate most effectively with you.</p>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'20px' }}>
-          {[['Preferred Work Environment', work.env], ['Communication Tips', work.comms]].map(([title, items]) => (
-            <div key={title} className="work-card" style={{ border:`1px solid ${ac}22`, borderRadius:'10px', padding:'14px 16px', background: al + '44' }}>
+          {[['Preferred Work Environment',work.env],['Communication Tips',work.comms]].map(([title,items]) => (
+            <div key={title} className="work-card" style={{ border:`1px solid ${ac}22`, borderRadius:'10px', padding:'14px 16px', background:al+'44' }}>
               <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:ac, marginBottom:'10px', paddingBottom:'6px', borderBottom:`1px solid ${ac}33` }}>{title}</div>
               <ul style={{ paddingLeft:'14px' }}>
                 {items.map((x,i) => <li key={i} style={{ fontSize:'11px', lineHeight:1.65, marginBottom:'5px', color:'#2a2a2a' }}>{x}</li>)}
@@ -463,16 +323,13 @@ function Report({ name, date, department, result, answers, onReset }) {
       {/* ══ PAGE 8 — POTENTIAL PITFALLS ══ */}
       <Section title="Potential Pitfalls of Each Style" accent={ac} pageBreak>
         <PrintHeader name={name} department={department} section="Potential Pitfalls" />
-        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>
-          Any strength, when overused, can become a derailer. Below are common challenges for each style — your own are highlighted.
-        </p>
+        <p style={{ fontSize:'12px', color:'#555', marginBottom:'16px', lineHeight:1.65 }}>Any strength, when overused, can become a derailer. Below are common challenges for each style — your own are highlighted.</p>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'16px' }}>
-          {[
-            ['Conserver', BLUE, BLUE_LIGHT, ["May be rigid in thought and action","May discourage innovation by promoting existing processes","May not see broader context beyond present details","May delay completion due to perfectionism","May appear unyielding and set in their ways","May over-focus on irrelevant details"]],
-            ['Pragmatist', GREEN, GREEN_LIGHT, ["May over-focus on building consensus","May not adequately promote personal priorities","May try to please too many people at once","May be indecisive or take too long to act","May appear to flip-flop on issues","May negotiate compromise that satisfies no one"]],
-            ['Originator', GOLD, GOLD_LIGHT, ["May create chaos and lack of discipline","May become lost in theory, ignoring current realities","Often underestimates the short-term human impact of change","Frequently moves to new ideas before completing existing ones","May not adapt well to new policies once set","May overlook value of engaging key stakeholders"]],
+          {[['Conserver',BLUE,BLUE_LIGHT,["May be rigid in thought and action","May discourage innovation by promoting existing processes","May not see broader context beyond present details","May delay completion due to perfectionism","May appear unyielding and set in their ways","May over-focus on irrelevant details"]],
+            ['Pragmatist',GREEN,GREEN_LIGHT,["May over-focus on building consensus","May not adequately promote personal priorities","May try to please too many people at once","May be indecisive or take too long to act","May appear to flip-flop on issues","May negotiate compromise that satisfies no one"]],
+            ['Originator',GOLD,GOLD_LIGHT,["May create chaos and lack of discipline","May become lost in theory, ignoring current realities","Often underestimates the short-term human impact of change","Frequently moves to new ideas before completing existing ones","May not adapt well to new policies once set","May overlook value of engaging key stakeholders"]]
           ].map(([s,c,bg,items]) => (
-            <div key={s} style={{ border:`1.5px solid ${s.toLowerCase()===style ? c : '#e8e8e4'}`, borderRadius:'10px', padding:'14px', background: s.toLowerCase()===style ? bg : '#fff' }}>
+            <div key={s} style={{ border:`1.5px solid ${s.toLowerCase()===style?c:'#e8e8e4'}`, borderRadius:'10px', padding:'14px', background:s.toLowerCase()===style?bg:'#fff' }}>
               <div style={{ fontSize:'11px', fontWeight:700, color:c, marginBottom:'10px', paddingBottom:'6px', borderBottom:`0.5px solid ${c}44`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                 <span>{s}</span>
                 {s.toLowerCase()===style && <span style={{ fontSize:'9px', background:c, color:'#fff', padding:'2px 8px', borderRadius:'99px' }}>You</span>}
@@ -492,31 +349,28 @@ function Report({ name, date, department, result, answers, onReset }) {
       {/* ══ PAGE 9 — ITEM RESPONSES ══ */}
       <Section title="Your Item Responses — All 20 Items" accent={ac} pageBreak>
         <PrintHeader name={name} department={department} section="Item Responses" />
-        <p style={{ fontSize:'12px', color:'#555', marginBottom:'14px', lineHeight:1.65 }}>
-          Each pair sums to 3. Filled circles show where you placed the higher weight.
-        </p>
+        <p style={{ fontSize:'12px', color:'#555', marginBottom:'14px', lineHeight:1.65 }}>Each pair sums to 3. Filled circles show where you placed the higher weight.</p>
         <table className="resp-table" style={{ width:'100%', borderCollapse:'collapse', fontSize:'11px' }}>
           <thead>
-            <tr style={{ background: al }}>
+            <tr style={{ background:al }}>
               {['#','Statement A','A','Statement B','B'].map(h => (
-                <th key={h} style={{ padding:'7px 8px', textAlign: h==='A'||h==='B' ? 'center':'left', fontSize:'10px', color: at, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.05em' }}>{h}</th>
+                <th key={h} style={{ padding:'7px 8px', textAlign:h==='A'||h==='B'?'center':'left', fontSize:'10px', color:at, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.05em' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {QUESTIONS.map((q, i) => {
-              const av = parseInt(answers[i].a), bv = parseInt(answers[i].b)
-              const rowBg = i % 2 === 0 ? '#fff' : '#fafaf8'
+            {QUESTIONS.map((q,i) => {
+              const av=parseInt(answers[i].a), bv=parseInt(answers[i].b)
               return (
-                <tr key={i} style={{ background: rowBg }}>
+                <tr key={i} style={{ background:i%2===0?'#fff':'#fafaf8' }}>
                   <td style={{ padding:'6px 8px', color:'#bbb', fontWeight:700, width:'24px', borderBottom:'0.5px solid #f0f0ec' }}>{i+1}</td>
                   <td style={{ padding:'6px 8px', width:'37%', color:'#2a2a2a', borderBottom:'0.5px solid #f0f0ec' }}>{q[0]}</td>
                   <td style={{ padding:'6px 8px', textAlign:'center', width:'36px', borderBottom:'0.5px solid #f0f0ec' }}>
-                    <span className={av>bv?'score-dot-hi':'score-dot'} style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:'22px', height:'22px', borderRadius:'50%', fontSize:'11px', fontWeight:700, background: av>bv ? ac : '#f0f0ec', color: av>bv ? '#fff':'#888' }}>{answers[i].a}</span>
+                    <span className={av>bv?'score-dot-hi':'score-dot'} style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:'22px', height:'22px', borderRadius:'50%', fontSize:'11px', fontWeight:700, background:av>bv?ac:'#f0f0ec', color:av>bv?'#fff':'#888' }}>{answers[i].a}</span>
                   </td>
                   <td style={{ padding:'6px 8px', width:'37%', color:'#2a2a2a', borderBottom:'0.5px solid #f0f0ec' }}>{q[1]}</td>
                   <td style={{ padding:'6px 8px', textAlign:'center', width:'36px', borderBottom:'0.5px solid #f0f0ec' }}>
-                    <span className={bv>av?'score-dot-hi':'score-dot'} style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:'22px', height:'22px', borderRadius:'50%', fontSize:'11px', fontWeight:700, background: bv>av ? ac : '#f0f0ec', color: bv>av ? '#fff':'#888' }}>{answers[i].b}</span>
+                    <span className={bv>av?'score-dot-hi':'score-dot'} style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:'22px', height:'22px', borderRadius:'50%', fontSize:'11px', fontWeight:700, background:bv>av?ac:'#f0f0ec', color:bv>av?'#fff':'#888' }}>{answers[i].b}</span>
                   </td>
                 </tr>
               )
@@ -525,7 +379,7 @@ function Report({ name, date, department, result, answers, onReset }) {
         </table>
       </Section>
 
-      {/* ── Bottom print button (screen only) ── */}
+      {/* ── Bottom print button ── */}
       <div className="no-print" style={{ display:'flex', gap:'10px', justifyContent:'center', marginTop:'8px', flexWrap:'wrap' }}>
         <button onClick={() => window.print()} style={{ padding:'10px 28px', fontSize:'13px', borderRadius:'8px', border:`1px solid ${ac}`, background:ac, color:'#fff', cursor:'pointer', fontFamily:'inherit', fontWeight:600 }}>
           🖨 Print / Save as PDF
@@ -560,65 +414,17 @@ function PasswordGate({ onUnlock }) {
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f7f7f4', padding:'20px' }}>
-      <div style={{
-        background:'#fff', border:'0.5px solid #e0e0da', borderRadius:'16px',
-        padding:'40px 36px', width:'100%', maxWidth:'380px', textAlign:'center',
-        boxShadow:'0 4px 24px rgba(0,0,0,0.06)',
-        transform: shake ? 'translateX(0)' : 'none',
-        animation: shake ? 'shake 0.5s ease' : 'none',
-      }}>
-        <style>{`
-          @keyframes shake {
-            0%,100%{transform:translateX(0)}
-            15%{transform:translateX(-8px)}
-            30%{transform:translateX(8px)}
-            45%{transform:translateX(-6px)}
-            60%{transform:translateX(6px)}
-            75%{transform:translateX(-3px)}
-            90%{transform:translateX(3px)}
-          }
-        `}</style>
-
-        {/* Icon */}
+      <div style={{ background:'#fff', border:'0.5px solid #e0e0da', borderRadius:'16px', padding:'40px 36px', width:'100%', maxWidth:'380px', textAlign:'center', boxShadow:'0 4px 24px rgba(0,0,0,0.06)', animation:shake?'shake 0.5s ease':'none' }}>
+        <style>{`@keyframes shake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-8px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(6px)} 75%{transform:translateX(-3px)} 90%{transform:translateX(3px)} }`}</style>
         <div style={{ width:'52px', height:'52px', background:GOLD_LIGHT, borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px' }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill={GOLD}><path d="M12 2L8.5 7.5H3l4.5 4-1.7 6L12 14.5l6.2 3-1.7-6 4.5-4h-5.5z"/></svg>
         </div>
-
-        <div style={{ fontSize:'20px', fontWeight:500, fontFamily:'Georgia,serif', color:'#1a1a1a', marginBottom:'6px' }}>
-          Change Style Indicator Assessment
-        </div>
-        <div style={{ fontSize:'12px', color:'#888', marginBottom:'28px', lineHeight:1.5 }}>
-          Enter the access password to begin your assessment.
-        </div>
-
+        <div style={{ fontSize:'20px', fontWeight:500, fontFamily:'Georgia,serif', color:'#1a1a1a', marginBottom:'6px' }}>Change Style Indicator Assessment</div>
+        <div style={{ fontSize:'12px', color:'#888', marginBottom:'28px', lineHeight:1.5 }}>Enter the access password to begin your assessment.</div>
         <form onSubmit={attempt}>
-          <input
-            type="password"
-            value={pw}
-            onChange={e => { setPw(e.target.value); setError(false) }}
-            placeholder="Password"
-            autoFocus
-            style={{
-              width:'100%', padding:'10px 14px', fontSize:'14px',
-              border:`1.5px solid ${error ? '#E24B4A' : '#ddddd8'}`,
-              borderRadius:'8px', background: error ? '#FCEBEB' : '#fff',
-              color:'#1a1a1a', fontFamily:'inherit', outline:'none',
-              marginBottom:'8px', textAlign:'center', letterSpacing:'0.1em',
-              transition:'border-color 0.2s, background 0.2s',
-            }}
-          />
-          {error && (
-            <div style={{ fontSize:'11px', color:'#A32D2D', marginBottom:'10px' }}>
-              Incorrect password. Please try again.
-            </div>
-          )}
-          <button type="submit" style={{
-            width:'100%', padding:'10px', fontSize:'13px', fontWeight:600,
-            borderRadius:'8px', border:'none', background:'#2E7D6B',
-            color:'#fff', cursor:'pointer', fontFamily:'inherit', marginTop:'4px',
-          }}>
-            Enter →
-          </button>
+          <input type="password" value={pw} onChange={e => { setPw(e.target.value); setError(false) }} placeholder="Password" autoFocus style={{ width:'100%', padding:'10px 14px', fontSize:'14px', border:`1.5px solid ${error?'#E24B4A':'#ddddd8'}`, borderRadius:'8px', background:error?'#FCEBEB':'#fff', color:'#1a1a1a', fontFamily:'inherit', outline:'none', marginBottom:'8px', textAlign:'center', letterSpacing:'0.1em' }} />
+          {error && <div style={{ fontSize:'11px', color:'#A32D2D', marginBottom:'10px' }}>Incorrect password. Please try again.</div>}
+          <button type="submit" style={{ width:'100%', padding:'10px', fontSize:'13px', fontWeight:600, borderRadius:'8px', border:'none', background:'#2E7D6B', color:'#fff', cursor:'pointer', fontFamily:'inherit', marginTop:'4px' }}>Enter →</button>
         </form>
       </div>
     </div>
@@ -643,7 +449,7 @@ export default function App() {
   function handleA(i, val) {
     const v = parseInt(val)
     const next = [...answers]
-    next[i] = (!isNaN(v) && v>=0 && v<=3) ? { a:String(v), b:String(3-v) } : { ...next[i], a:val }
+    next[i] = (!isNaN(v)&&v>=0&&v<=3) ? { a:String(v), b:String(3-v) } : { ...next[i], a:val }
     setAnswers(next)
     const nextE = [...errors]
     const av2=parseInt(next[i].a), bv2=parseInt(next[i].b)
@@ -654,7 +460,7 @@ export default function App() {
   function handleB(i, val) {
     const v = parseInt(val)
     const next = [...answers]
-    next[i] = (!isNaN(v) && v>=0 && v<=3) ? { a:String(3-v), b:String(v) } : { ...next[i], b:val }
+    next[i] = (!isNaN(v)&&v>=0&&v<=3) ? { a:String(3-v), b:String(v) } : { ...next[i], b:val }
     setAnswers(next)
     const nextE = [...errors]
     const av2=parseInt(next[i].a), bv2=parseInt(next[i].b)
@@ -687,13 +493,25 @@ export default function App() {
     setResult({ cScore, oScore, diff, style, subType })
 
     setSubmitting(true)
-    const reportDate = date || new Date().toLocaleDateString('en-GB',{ day:'numeric', month:'long', year:'numeric' })
+    const reportDate = date
+      ? new Date(date).toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' })
+      : new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' })
+
+    // Build the report HTML to save to Drive
+    const reportHTML = buildReportHTML(name, reportDate, cScore, oScore, answers)
+
     await saveToSheets({
-      name: name.trim(), email: email.trim(), department: department, date: reportDate,
-      conserver_score: cScore, originator_score: oScore, difference: diff,
+      name: name.trim(),
+      email: email.trim(),
+      department: department,
+      date: reportDate,
+      conserver_score: cScore,
+      originator_score: oScore,
+      difference: diff,
       style: style.charAt(0).toUpperCase()+style.slice(1),
       sub_type: NARRATIVES[style][subType].label,
       submitted_at: new Date().toISOString(),
+      report_html: reportHTML,
       ...Object.fromEntries(answers.map((a,i) => [`q${i+1}_a`, a.a])),
       ...Object.fromEntries(answers.map((a,i) => [`q${i+1}_b`, a.b])),
     })
@@ -710,7 +528,9 @@ export default function App() {
     window.scrollTo({ top:0, behavior:'smooth' })
   }
 
-  const reportDate = date || new Date().toLocaleDateString('en-GB',{ day:'numeric', month:'long', year:'numeric' })
+  const reportDate = date
+    ? new Date(date).toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' })
+    : new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' })
 
   if (step===2 && result) {
     return <Report name={name} date={reportDate} department={department} result={result} answers={answers} onReset={reset} />
@@ -727,7 +547,7 @@ export default function App() {
         </div>
         <div>
           <div style={{ fontSize:'18px', fontWeight:500, fontFamily:'Georgia,serif' }}>Change Style Indicator Assessment</div>
-          <div style={{ fontSize:'11px', color:'#888' }}>Assessment · Your full report appears instantly on screen</div>
+          <div style={{ fontSize:'11px', color:'#888' }}>Your full report appears instantly on screen</div>
         </div>
       </div>
 
@@ -742,8 +562,7 @@ export default function App() {
         </div>
 
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
-          {[['Full name *', name, setName, '', 'text'],
-            ['Work Email *', email, setEmail, '', 'email']].map(([label, val, setter, ph, type]) => (
+          {[['Full name *', name, setName, '', 'text'],['Work Email *', email, setEmail, '', 'email']].map(([label,val,setter,ph,type]) => (
             <div key={label}>
               <label style={{ display:'block', fontSize:'11px', color:'#666', marginBottom:'4px', fontWeight:500 }}>{label}</label>
               <input type={type} style={inp} value={val} onChange={e => setter(e.target.value)} placeholder={ph} />
@@ -754,11 +573,7 @@ export default function App() {
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'20px' }}>
           <div>
             <label style={{ display:'block', fontSize:'11px', color:'#666', marginBottom:'4px', fontWeight:500 }}>Entity *</label>
-            <select
-              value={department}
-              onChange={e => setDepartment(e.target.value)}
-              style={{ ...inp, color: department ? '#1a1a1a' : '#999', cursor:'pointer' }}
-            >
+            <select value={department} onChange={e => setDepartment(e.target.value)} style={{ ...inp, color:department?'#1a1a1a':'#999', cursor:'pointer' }}>
               <option value="" disabled>Select your entity</option>
               {['Corporate Functions','BCS','NETS Tech','NETS','NETS Solutions','NETS Malaysia'].map(d => (
                 <option key={d} value={d}>{d}</option>
