@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { QUESTIONS, ITEM_MAP, NARRATIVES, STYLE_INFO, TIPS, WORKING_WITH } from './data.js'
-import { classifyScore, getSubType, continuumPct, buildReportHTML } from './reportBuilder.js'
+import { classifyScore, getSubType, continuumPct } from './reportBuilder.js'
 
 const SHEETS_URL = import.meta.env.VITE_SHEETS_URL || ''
 
@@ -497,9 +497,7 @@ export default function App() {
       ? new Date(date).toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' })
       : new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' })
 
-    // Build the report HTML to save to Drive
-    const reportHTML = buildReportHTML(name, reportDate, cScore, oScore, answers)
-
+    // Send data to sheets — report is built server-side in Apps Script
     await saveToSheets({
       name: name.trim(),
       email: email.trim(),
@@ -511,7 +509,6 @@ export default function App() {
       style: style.charAt(0).toUpperCase()+style.slice(1),
       sub_type: NARRATIVES[style][subType].label,
       submitted_at: new Date().toISOString(),
-      report_html: reportHTML,
       ...Object.fromEntries(answers.map((a,i) => [`q${i+1}_a`, a.a])),
       ...Object.fromEntries(answers.map((a,i) => [`q${i+1}_b`, a.b])),
     })
