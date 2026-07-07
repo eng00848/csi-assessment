@@ -128,7 +128,7 @@ function Report({ name, date, department, result, answers, onReset }) {
   const info = STYLE_INFO[style]
   const tips = TIPS[style]
   const work = WORKING_WITH[style]
-  const pct = continuumPct(style, diff)
+  const pct = continuumPct(style, diff, cScore, oScore)
   const styleLabel = style.charAt(0).toUpperCase() + style.slice(1)
   const otherStyles = ['conserver','pragmatist','originator'].filter(s => s !== style)
   const ac = info.color, al = info.light, at = info.textColor
