@@ -18,7 +18,7 @@ export function classifyScore(cScore, oScore) {
   return { style: 'originator', diff }
 }
 
-export function continuumPct(style, diff) {
+export function continuumPct(style, diff, cScore, oScore) {
   function diffToPct(d) {
     const ticks = [0, 5, 9, 17, 30, 60]
     const positions = [0, 10, 20, 30, 40, 50]
@@ -30,9 +30,10 @@ export function continuumPct(style, diff) {
     }
     return 50
   }
-  if (style === 'pragmatist') return 50
-  if (style === 'conserver') return 50 - diffToPct(diff)
-  return 50 + diffToPct(diff)
+  // Marker position depends on which side of center the scores lean
+  if (cScore > oScore) return 50 - diffToPct(diff)
+  if (oScore > cScore) return 50 + diffToPct(diff)
+  return 50
 }
 
 export function buildReportHTML(name, date, cScore, oScore, scores) {
