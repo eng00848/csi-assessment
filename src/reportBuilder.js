@@ -30,6 +30,10 @@ export function continuumPct(style, diff, cScore, oScore) {
     }
     return 50
   }
+  if (cScore > oScore) return 50 - diffToPct(diff)
+  if (oScore > cScore) return 50 + diffToPct(diff)
+  return 50
+}
   // Marker position depends on which side of center the scores lean
   if (cScore > oScore) return 50 - diffToPct(diff)
   if (oScore > cScore) return 50 + diffToPct(diff)
