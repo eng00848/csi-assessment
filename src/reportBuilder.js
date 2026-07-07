@@ -19,9 +19,20 @@ export function classifyScore(cScore, oScore) {
 }
 
 export function continuumPct(style, diff) {
+  function diffToPct(d) {
+    const ticks = [0, 5, 9, 17, 30, 60]
+    const positions = [0, 10, 20, 30, 40, 50]
+    for (let i = 0; i < ticks.length - 1; i++) {
+      if (d <= ticks[i + 1]) {
+        const range = ticks[i + 1] - ticks[i]
+        return positions[i] + ((d - ticks[i]) / range) * (positions[i + 1] - positions[i])
+      }
+    }
+    return 50
+  }
   if (style === 'pragmatist') return 50
-  if (style === 'conserver') return Math.max(2, 50 - (diff / 60) * 50)
-  return Math.min(98, 50 + (diff / 60) * 50)
+  if (style === 'conserver') return 50 - diffToPct(diff)
+  return 50 + diffToPct(diff)
 }
 
 export function buildReportHTML(name, date, cScore, oScore, scores) {
