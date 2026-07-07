@@ -19,26 +19,26 @@ export const NARRATIVES = {
       challenges: ["May strongly resist change even when it is clearly necessary","Can unintentionally stifle innovation or suppress new thinking","May be perceived as unyielding, cautious, or set in their ways","Difficulty seeing beyond current details to understand the broader context","May delay action through excessive reflection or perfectionism"],
     },
   },
-  pragmatist: {
-    mild: {
-      label: "Mild Pragmatist", range: "diff 0–4",
-      intro: "You sit almost exactly at the center of the continuum — highly adaptable and genuinely able to shift between Conserver and Originator approaches depending on what the situation calls for. You read context intuitively and adjust your style accordingly, making you a versatile and trusted contributor in most team environments.",
-      strengths: ["Exceptional situational flexibility and adaptability","Trusted by both Conservers and Originators equally","Skilled at reading what a situation needs and responding accordingly","Natural bridge-builder between opposing perspectives","Rarely triggers conflict due to their even-handed approach"],
-      challenges: ["May lack a strong personal stance when decisive leadership is needed","Can appear uncommitted or difficult to read by stronger-style colleagues","May defer too easily to more dominant personalities in the room","Risk of being pulled in opposing directions by both sides simultaneously"],
-    },
-    moderate: {
-      label: "Moderate Pragmatist", range: "diff 5–7",
-      intro: "You are comfortably in the middle of the continuum, with a clear preference for practical, outcome-driven approaches to change. You are a natural mediator and collaborator, focused first and foremost on what will actually work. You understand and respect structure without being bound by it.",
-      strengths: ["Highly effective at facilitating group problem-solving and consensus","Builds cooperation across different styles and perspectives","Translates ideas into tangible, workable action plans","Adapts past experience effectively to new and unfamiliar situations","Encourages congruence between values and actions in organizations"],
-      challenges: ["May over-focus on building consensus at the cost of speed","Can be seen as indecisive or slow to commit to a clear direction","May negotiate a compromise that ultimately satisfies no one fully","Risk of trying to please too many stakeholders at the same time","Can appear to flip-flop on issues when pulled in different directions"],
-    },
-    strong: {
-      label: "Strong Pragmatist", range: "diff 8–9",
-      intro: "You are firmly anchored in the pragmatist space — highly skilled at seeing all perspectives and finding the most workable path forward. You are a deliberate and skilled mediator, able to bridge long-range goals with short-term demands. Colleagues at the extremes may find you frustratingly noncommittal, but your objectivity is a genuine organizational strength.",
-      strengths: ["Excellent at navigating conflict and tension between opposing styles","Keeps teams focused on practical outcomes rather than ideology","Bridges long-range strategic goals with immediate operational demands","Seen as fair, balanced, and trustworthy by most team members","Skilled at bringing divergent groups to a workable shared outcome"],
-      challenges: ["May appear to lack conviction or personal drive to strong styles","Can be perceived as hiding behind team needs rather than taking a stand","May be too easily swayed by the last persuasive voice heard","Risk of being seen as noncommittal, indecisive, or overly accommodating"],
-    },
+ pragmatist: {
+  strong: {
+    label: "Strong Pragmatist", range: "diff 0–4",
+    intro: "You sit almost exactly at the center of the continuum — highly adaptable and genuinely able to shift between Conserver and Originator approaches depending on what the situation calls for. You read context intuitively and adjust your style accordingly, making you a versatile and trusted contributor in most team environments.",
+    strengths: ["Exceptional situational flexibility and adaptability","Trusted by both Conservers and Originators equally","Skilled at reading what a situation needs and responding accordingly","Natural bridge-builder between opposing perspectives","Rarely triggers conflict due to their even-handed approach"],
+    challenges: ["May lack a strong personal stance when decisive leadership is needed","Can appear uncommitted or difficult to read by stronger-style colleagues","May defer too easily to more dominant personalities in the room","Risk of being pulled in opposing directions by both sides simultaneously"],
   },
+  moderate: {
+    label: "Moderate Pragmatist", range: "diff 5–7",
+    intro: "You are comfortably in the middle of the continuum, with a clear preference for practical, outcome-driven approaches to change. You are a natural mediator and collaborator, focused first and foremost on what will actually work. You understand and respect structure without being bound by it.",
+    strengths: ["Highly effective at facilitating group problem-solving and consensus","Builds cooperation across different styles and perspectives","Translates ideas into tangible, workable action plans","Adapts past experience effectively to new and unfamiliar situations","Encourages congruence between values and actions in organizations"],
+    challenges: ["May over-focus on building consensus at the cost of speed","Can be seen as indecisive or slow to commit to a clear direction","May negotiate a compromise that ultimately satisfies no one fully","Risk of trying to please too many stakeholders at the same time","Can appear to flip-flop on issues when pulled in different directions"],
+  },
+  mild: {
+    label: "Mild Pragmatist", range: "diff 8–9",
+    intro: "You are on the edge of the pragmatist zone — leaning close to either Conserver or Originator territory. You are still a skilled mediator, able to see multiple perspectives and find workable outcomes, but you have a subtle lean that starts to shape your preferences. Colleagues at the extremes may sometimes find you frustratingly noncommittal, but your relative balance is a genuine strength.",
+    strengths: ["Skilled at navigating conflict between opposing styles","Keeps teams focused on practical outcomes rather than ideology","Bridges long-range strategic goals with immediate operational demands","Seen as fair, balanced, and trustworthy by most team members","Can lean into either Conserver or Originator thinking when required"],
+    challenges: ["May appear to lack conviction or personal drive to stronger styles","Can be perceived as hiding behind team needs rather than taking a stand","May be too easily swayed by the last persuasive voice heard","Risk of being seen as noncommittal, indecisive, or overly accommodating"],
+  },
+},
   originator: {
     mild: {
       label: "Mild Originator", range: "diff 10–16",
