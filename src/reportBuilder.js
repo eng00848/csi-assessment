@@ -1,11 +1,11 @@
 import { NARRATIVES, STYLE_INFO, TIPS, WORKING_WITH, QUESTIONS } from './data.js'
 
 export function getSubType(style, diff) {
-  if (style === 'pragmatist') {
-    if (diff <= 4) return 'mild'
-    if (diff <= 7) return 'moderate'
-    return 'strong'
-  }
+if (style === 'pragmatist') {
+  if (diff <= 4) return 'strong'
+  if (diff <= 7) return 'moderate'
+  return 'mild'
+}
   if (diff <= 16) return 'mild'
   if (diff <= 29) return 'moderate'
   return 'strong'
